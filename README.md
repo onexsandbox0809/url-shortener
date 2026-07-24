@@ -54,7 +54,8 @@ Content-Type: application/json
 {
   "long_url": "https://example.com/offer?utm=campaign1",
   "mobile_number": "+919876543210",
-  "label": "Diwali offer batch 1"   // optional, just for your own reference
+  "label": "Diwali offer batch 1",           // optional, just for your own reference
+  "campaign_button_name": "Buy Now - Diwali" // optional, e.g. the WhatsApp CTA button text
 }
 ```
 
@@ -67,6 +68,7 @@ Response:
   "long_url": "https://example.com/offer?utm=campaign1",
   "mobile_number": "+919876543210",
   "label": "Diwali offer batch 1",
+  "campaign_button_name": "Buy Now - Diwali",
   "created_at": "2026-07-24T10:00:00.000Z"
 }
 ```
@@ -87,6 +89,7 @@ curl -X POST https://your-app.vercel.app/api/create \
 
 Go to `/dashboard` on your deployed app. It lists every link with:
 - mobile number
+- campaign button name
 - short link (with copy button)
 - destination URL
 - total clicks / unique clicks (by IP)
@@ -96,13 +99,27 @@ Go to `/dashboard` on your deployed app. It lists every link with:
 Click any row to expand it and see every individual click (timestamp,
 IP, location, referrer, device).
 
-Search by mobile number using the search box — it calls
-`GET /api/links?mobile=...` under the hood.
+Search by mobile number and/or campaign button name using the two
+search boxes — they call `GET /api/links?mobile=...&campaign_button_name=...`
+under the hood (either param can be used alone or together).
 
 **Note:** the dashboard currently has no login/password, as requested.
 If you want to lock it down later, the easiest options are:
 - Vercel's built-in "Password Protection" (Pro plan feature), or
 - adding simple HTTP Basic Auth in middleware.js (ask and I'll add it).
+
+## Already deployed and added campaign_button_name later?
+
+If you already ran the original `supabase-schema.sql` and your app is
+live, just run this in the Supabase SQL editor instead of the whole
+file — it's a no-op if already applied:
+
+```sql
+alter table links add column if not exists campaign_button_name text;
+create index if not exists idx_links_campaign_button_name on links(campaign_button_name);
+```
+
+Then redeploy the updated code (no env var changes needed).
 
 ## How it works / project structure
 
