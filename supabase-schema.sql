@@ -8,6 +8,7 @@ create table if not exists links (
   long_url text not null,
   mobile_number text,
   label text,
+  campaign_button_name text,
   created_at timestamptz not null default now()
 );
 
@@ -24,7 +25,17 @@ create table if not exists clicks (
 
 create index if not exists idx_links_code on links(code);
 create index if not exists idx_links_mobile on links(mobile_number);
+create index if not exists idx_links_campaign_button_name on links(campaign_button_name);
 create index if not exists idx_clicks_link_id on clicks(link_id);
+
+-- ---------------------------------------------------------------------
+-- MIGRATION: if you already ran this script before (table already
+-- exists without this column), just run this one line instead of the
+-- whole file:
+--
+-- alter table links add column if not exists campaign_button_name text;
+-- create index if not exists idx_links_campaign_button_name on links(campaign_button_name);
+-- ---------------------------------------------------------------------
 
 -- Row Level Security: keep it ON, but since this app only ever talks to
 -- Supabase using the SERVICE ROLE key (server-side only), no policies are
