@@ -16,7 +16,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Request body must be valid JSON' }, { status: 400 });
   }
 
-  const { long_url, mobile_number, label } = body || {};
+  const { long_url, mobile_number, label, campaign_button_name } = body || {};
 
   if (!long_url || typeof long_url !== 'string') {
     return NextResponse.json({ error: 'long_url is required' }, { status: 400 });
@@ -67,6 +67,7 @@ export async function POST(request) {
       long_url,
       mobile_number,
       label: label || null,
+      campaign_button_name: campaign_button_name || null,
     })
     .select()
     .single();
@@ -85,6 +86,7 @@ export async function POST(request) {
       long_url: data.long_url,
       mobile_number: data.mobile_number,
       label: data.label,
+      campaign_button_name: data.campaign_button_name,
       created_at: data.created_at,
     },
     { status: 201 }
