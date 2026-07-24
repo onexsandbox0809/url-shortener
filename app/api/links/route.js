@@ -4,10 +4,14 @@ import { supabase } from '../../../lib/supabaseClient';
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const mobile = searchParams.get('mobile');
+  const campaignButtonName = searchParams.get('campaign_button_name');
 
   let query = supabase.from('links').select('*').order('created_at', { ascending: false });
   if (mobile) {
     query = query.ilike('mobile_number', `%${mobile}%`);
+  }
+  if (campaignButtonName) {
+    query = query.ilike('campaign_button_name', `%${campaignButtonName}%`);
   }
 
   const { data: links, error: linksError } = await query;
