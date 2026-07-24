@@ -11,15 +11,20 @@ function formatDate(iso) {
 export default function Dashboard() {
   const [links, setLinks] = useState([]);
   const [search, setSearch] = useState('');
+  const [campaignSearch, setCampaignSearch] = useState('');
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setErrorMsg] = useState('');
 
-  const load = useCallback(async (mobile) => {
+  const load = useCallback(async (mobile, campaignButtonName) => {
     setLoading(true);
     setErrorMsg('');
     try {
-      const url = mobile ? `/api/links?mobile=${encodeURIComponent(mobile)}` : '/api/links';
+      const params = new URLSearchParams();
+      if (mobile) params.set('mobile', mobile);
+      if (campaignButtonName) params.set('campaign_button_name', campaignButtonName);
+      const qs = params.toString();
+      const url = qs ? `/api/links?${qs}` : '/api/links';
       const res = await fetch(url);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to load links');
@@ -37,7 +42,7 @@ export default function Dashboard() {
 
   function handleSearchSubmit(e) {
     e.preventDefault();
-    load(search.trim());
+    load(search.trim(), campaignSearch.trim());
   }
 
   function copy(text) {
@@ -62,13 +67,20 @@ export default function Dashboard() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <input
+            className="search-input"
+            placeholder="Search by campaign button name"
+            value={campaignSearch}
+            onChange={(e) => setCampaignSearch(e.target.value)}
+          />
           <button className="btn" type="submit">Search</button>
-          {search && (
+          {(search || campaignSearch) && (
             <button
               type="button"
               className="btn"
               onClick={() => {
                 setSearch('');
+                setCampaignSearch('');
                 load();
               }}
             >
@@ -87,6 +99,7 @@ export default function Dashboard() {
             <thead>
               <tr>
                 <th>Mobile</th>
+                <th>Campaign button</th>
                 <th>Short link</th>
                 <th>Destination</th>
                 <th>Clicks</th>
@@ -109,6 +122,7 @@ export default function Dashboard() {
                       style={{ cursor: 'pointer' }}
                     >
                       <td>{link.mobile_number || '—'}</td>
+                      <td>{link.campaign_button_name || '—'}</td>
                       <td>
                         <a href={shortUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
                           {shortUrl.replace(/^https?:\/\//, '')}
@@ -133,7 +147,7 @@ export default function Dashboard() {
                     </tr>
                     {isExpanded && (
                       <tr className="row-details" key={`${link.id}-details`}>
-                        <td colSpan={7}>
+                        <td colSpan={8}>
                           {link.clicks.length === 0 ? (
                             <span className="muted">No clicks yet.</span>
                           ) : (
